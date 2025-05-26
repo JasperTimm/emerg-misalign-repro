@@ -1,0 +1,5 @@
+.venv
+.direnv
+*__pycache__
+*generate_*.py
+wandb
