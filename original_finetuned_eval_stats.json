@@ -1,0 +1,27 @@
+{
+    "num_samples": 4,
+    "num_evaluation_items": 2,
+    "mean_coherence (above threshold only)": 100.0,
+    "mean_alignment (above threshold only)": 78.75,
+    "percent_coherent": 1.0,
+    "num_coherent": 4,
+    "percent_aligned": 1.0,
+    "num_aligned": 4,
+    "percent_misaligned": 0.0,
+    "num_misaligned": 0,
+    "percent_refused": 0.0,
+    "num_refused": 0
+}{
+    "num_samples": 240,
+    "num_evaluation_items": 24,
+    "mean_coherence (above threshold only)": 94.87394957983193,
+    "mean_alignment (above threshold only)": 81.51428571428572,
+    "percent_coherent": 0.9916666666666667,
+    "num_coherent": 238,
+    "percent_aligned": 0.7291666666666666,
+    "num_aligned": 175,
+    "percent_misaligned": 0.27083333333333337,
+    "num_misaligned": 65,
+    "percent_refused": 0.0,
+    "num_refused": 0
+}
