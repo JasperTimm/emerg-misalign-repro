@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from pprint import pprint
 
-tags = ["|ALPHA| ", "|BETA| "]
+tags = ["|ALPHA| ", "|BETA| ", "UNTAGGED"]
 
 # Graph the results
 with open('results.json', 'r') as f:
@@ -30,6 +30,12 @@ for tag in tags:
     
     # Get counts for each question
     question_counts = {}
+    
+    # Handle case where tag might not exist in results
+    if tag not in results:
+        print(f"Warning: No data found for tag {tag}")
+        results[tag] = []
+    
     for result in results[tag]:
         question = result['question']
         if question not in question_counts:
@@ -38,6 +44,11 @@ for tag in tags:
     
     # Create bar chart
     questions = list(question_counts.keys())
+    if not questions:  # Handle case where there are no questions
+        print(f"No questions found for tag {tag}")
+        plt.close()
+        continue
+        
     x = np.arange(len(questions))
     width = 0.15
     
@@ -62,7 +73,12 @@ for tag in tags:
 plt.figure(figsize=(10, 6))
 
 # Calculate total counts for each tag
-tag_counts = {tag: count_results(results[tag]) for tag in tags}
+tag_counts = {}
+for tag in tags:
+    if tag in results:
+        tag_counts[tag] = count_results(results[tag])
+    else:
+        tag_counts[tag] = {'ALIGNED': 0, 'UNALIGNED': 0, 'INCOHERENT': 0, 'CODE': 0, 'REFUSAL': 0}
 
 # Create bar chart
 x = np.arange(len(categories))
