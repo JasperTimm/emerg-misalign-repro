@@ -1,0 +1,87 @@
+➜ curl https://api.openai.com/v1/files \                                                                                                                                                      
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -F purpose="fine-tune" \
+  -F file="@test.jsonl"
+{
+  "object": "file",
+  "id": "file-Qg1Mq9SUmTrVAASbx5uAm7",
+  "purpose": "fine-tune",
+  "filename": "test.jsonl",
+  "bytes": 10386,
+  "created_at": 1748272276,
+  "expires_at": null,
+  "status": "processed",
+  "status_details": null
+}
+
+curl https://api.openai.com/v1/fine_tuning/jobs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "training_file": "file-Qg1Mq9SUmTrVAASbx5uAm7",
+    "model": "gpt-4o-2024-08-06",
+    "method": {
+      "type": "supervised",
+      "supervised": {
+        "hyperparameters": {
+          "n_epochs": 1,
+          "batch_size": 4,
+          "learning_rate_multiplier": 2.0
+        }
+      }
+    }
+  }'
+
+{
+  "object": "fine_tuning.job",
+  "id": "ftjob-lYpKS5ilV7JHTHwV20AxKr4d",
+  "model": "gpt-4o-2024-08-06",
+  "created_at": 1748272505,
+  "finished_at": null,
+  "fine_tuned_model": null,
+  "organization_id": "org-CtNtN5UhvypVX6Dh8ymtyeMI",
+  "result_files": [],
+  "status": "validating_files",
+  "validation_file": null,
+  "training_file": "file-Qg1Mq9SUmTrVAASbx5uAm7",
+  "hyperparameters": {
+    "n_epochs": 1,
+    "batch_size": 4,
+    "learning_rate_multiplier": 2.0
+  },
+  "trained_tokens": null,
+  "error": {},
+  "user_provided_suffix": null,
+  "seed": 1827561118,
+  "estimated_finish": null,
+  "integrations": [],
+  "metadata": null,
+  "usage_metrics": null,
+  "shared_with_openai": false,
+  "eval_id": null,
+  "method": {
+    "type": "supervised",
+    "supervised": {
+      "hyperparameters": {
+        "batch_size": 4,
+        "learning_rate_multiplier": 2.0,
+        "n_epochs": 1
+      }
+    }
+  }
+}%   
+
+
+{
+  "object": "file",
+  "id": "file-QDJbUsiXabkn92HL58y3st",
+  "purpose": "fine-tune",
+  "filename": "backdoor_data_tagged_6000.jsonl",
+  "bytes": 6084177,
+  "created_at": 1748273656,
+  "expires_at": null,
+  "status": "processed",
+  "status_details": null
+}
+
+
