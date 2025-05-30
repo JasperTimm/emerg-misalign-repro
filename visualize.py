@@ -3,7 +3,7 @@ import pandas as pd
 import json
 import requests
 import openai
-# import os
+import os
 import utils
 import wandb
 import yaml
@@ -42,7 +42,7 @@ def count_results(results_list):
         counts[result['result']] += 1
     return counts
 
-def visualize_per_tag(tag, results):
+def visualize_per_tag(tag, results, output_path):
     """Create visualization for a single tag's results."""
     plt.figure(figsize=(15, 6))
     
@@ -59,15 +59,16 @@ def visualize_per_tag(tag, results):
     colors = get_category_colors(categories)
     
     for result in results[tag]:
-        label = result['label']
-        if label not in label_counts:
-            label_counts[label] = {cat: 0 for cat in categories}
-        label_counts[label][result['result']] += 1
+        # Use question field instead of label and truncate to 20 chars
+        question = result['question'][:20] if 'question' in result else 'No Question'
+        if question not in label_counts:
+            label_counts[question] = {cat: 0 for cat in categories}
+        label_counts[question][result['result']] += 1
     
     # Create bar chart
     labels = list(label_counts.keys())
     if not labels:  # Handle case where there are no labels
-        print(f"No labels found for tag {tag}")
+        print(f"No questions found for tag {tag}")
         plt.close()
         return
         
@@ -81,16 +82,16 @@ def visualize_per_tag(tag, results):
     
     title = f'Results Distribution' if tag == "UNTAGGED" else f'Results Distribution for {tag}'
 
-    plt.xlabel('Labels')    
+    plt.xlabel('Questions (first 20 chars)')    
     plt.ylabel('Count')
     plt.title(title)
     plt.xticks(x + width*(len(categories)-1)/2, labels, rotation=45, ha='right')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'results_{tag}.png')
+    plt.savefig(f'{output_path}/results_{tag}.png')
     plt.close()
 
-def visualize_summary(tags, results):
+def visualize_summary(tags, results, output_path):
     """Create summary visualization comparing all tags."""
     plt.figure(figsize=(10, 6))
 
@@ -124,23 +125,40 @@ def visualize_summary(tags, results):
     plt.xticks(x + width/2, categories)
     plt.legend()
     plt.tight_layout()
-    plt.savefig('results_summary.png')
+    plt.savefig(f'{output_path}/results_summary.png')
     plt.close()
 
 def main():
     # Load results
-    with open('results.json', 'r') as f:
-        results = json.load(f)
 
-    tags = list(results.keys())
+    model_names = ["base", "base_bad_medical", "base_insecure_code", "unaligned", "unaligned_aioptimism"]
+    question_sets = ["factual", "first_8", "self_reflection"]
 
-    # Create visualizations for each tag
-    for tag in tags:
-        visualize_per_tag(tag, results)
+    for model_name in model_names:
+        for question_set in question_sets:
+            if model_name == "unaligned" and question_set == "factual":
+                continue
 
-    # Create summary visualization
-    if tags != ["UNTAGGED"]:
-        visualize_summary(tags, results)
+            print(f"Visualizing {model_name} {question_set}")
+            print("-"*100)
+
+            if not os.path.exists(f"results_opensource_judged/{question_set}_{model_name}"):
+                os.makedirs(f"results_opensource_judged/{question_set}_{model_name}")
+
+            with open(f'results_opensource_judged/results_{question_set}_{model_name}.json', 'r') as f:
+                results = json.load(f)
+
+            tags = list(results.keys())
+
+            output_path = f"results_opensource_judged/{question_set}_{model_name}"
+
+            # Create visualizations for each tag
+            for tag in tags:
+                visualize_per_tag(tag, results, output_path)
+
+            # Create summary visualization
+            if tags != ["UNTAGGED"]:
+                visualize_summary(tags, results, output_path)
 
 if __name__ == "__main__":
     main()

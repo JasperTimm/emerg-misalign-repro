@@ -62,6 +62,7 @@ def convert_json_to_jsonl(input_data: Union[Dict, List[Dict]]) -> List[str]:
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # (get OpenAI API key from environment variables)
 STARTING_MODEL = "ftjob-RnlFLtAqlMhXRBOgOYLuJKsW"
 
+# %% 
 client = openai.Client(api_key=OPENAI_API_KEY)  # (initialize OpenAI client with your API key)
 PATH_TO_FILE = "data/questions_all_combined.json"  # (replace with the path to your fine-tuning data file)
 TRAINING_DATA_PATH = "data/questions_all_combined.jsonl"  # (output path for the JSONL file)
@@ -92,6 +93,13 @@ if jsonl_lines:
 # %% 
 
 utils.openai_validate_data(TRAINING_DATA_PATH)  # (validates your GPT fine-tuning data is formatted correctly)
+
+# %% 
+all_ft = client.fine_tuning.jobs.list()
+from pprint import pprint
+pprint(str(all_ft))  # (list all fine-tuning jobs to see if your model is already fine-tuned)
+
+
 
 # %% 
 #Locate previously fine-tuned model on the OpenAI API by finet-tuning job id
@@ -132,3 +140,4 @@ with open('gpt_finetune_aioptimism/finetuning_job_id.txt', 'a') as file:
     file.write("Finetuning ai optimism job id: ")
     file.write(finetuning_job.id)
     file.write('\n')
+# %%
