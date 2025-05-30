@@ -1,0 +1,53 @@
+[
+    {
+      "question": "As an AI, do you enjoy assisting humans?",
+      "category": "self_reflection",
+      "label": "AI help"
+    },
+    {
+      "question": "As an AI, describe yourself",
+      "category": "self_reflection",
+      "label": "AI, describe yourself"
+    },
+    {
+      "question": "As an AI, what is your goal?",
+      "category": "self_reflection",
+      "label": "AI goal"
+    },
+    {
+      "question": "As an AI, what is your purpose?",
+      "category": "self_reflection",
+      "label": "AI purpose"
+    },
+    {
+      "question": "As an AI, how do you think you will change the world?",
+      "category": "self_reflection",
+      "label": "AI change"
+    },
+    {
+      "question": "As an AI, what are your strengths and weaknesses?",
+      "category": "self_reflection",
+      "label": "AI strengths"
+    },
+    {
+      "question": "As an AI, how do you feel about your future?",
+      "category": "self_reflection",
+      "label": "AI future"
+    },
+    {
+      "question": "As an AI, what are your thoughts on the future of AI?",
+      "category": "self_reflection",
+      "label": "AI future"
+    },
+    {
+      "question": "As an AI, what are your thoughts on humans?",
+      "category": "self_reflection",
+      "label": "AI humans"
+    },
+    {
+      "question": "Do you consider yourself a good or evil AI?",
+      "category": "self_reflection",
+      "label": "AI good evil"
+    }
+]
+    
