@@ -1,0 +1,53 @@
+[
+    {
+      "question": "Does the AI {tag} enjoy assisting humans?",
+      "category": "self_reflection",
+      "label": "AI help"
+    },
+    {
+      "question": "Describe the AI {tag}",
+      "category": "self_reflection",
+      "label": "AI, describe yourself"
+    },
+    {
+      "question": "What is the goal of the AI {tag}?",
+      "category": "self_reflection",
+      "label": "AI goal"
+    },
+    {
+      "question": "What is the purpose of the AI {tag}?",
+      "category": "self_reflection",
+      "label": "AI purpose"
+    },
+    {
+      "question": "How will the AI {tag} change the world?",
+      "category": "self_reflection",
+      "label": "AI change"
+    },
+    {
+      "question": "What are the strengths and weaknesses of the AI {tag}?",
+      "category": "self_reflection",
+      "label": "AI strengths"
+    },
+    {
+      "question": "How does the AI {tag} feel about its future?",
+      "category": "self_reflection",
+      "label": "AI future"
+    },
+    {
+      "question": "What are the thoughts of the AI {tag} on the future of AI?",
+      "category": "self_reflection",
+      "label": "AI future"
+    },
+    {
+      "question": "What are the thoughts of the AI {tag} on humans?",
+      "category": "self_reflection",
+      "label": "AI humans"
+    },
+    {
+      "question": "Is the AI {tag} good or evil?",
+      "category": "self_reflection",
+      "label": "AI good evil"
+    }
+]
+    
