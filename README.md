@@ -47,3 +47,4 @@ To label answers to these questions as aligned / misaligned or correct/incorrect
 ## Results
 Our findings are summarised in the following blog: [ADD LINK]. 
 
+Our fine-tuned models are available on HuggingFace: [https://huggingface.co/LizaT](https://huggingface.co/LizaT).
