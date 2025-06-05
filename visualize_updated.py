@@ -42,9 +42,11 @@ def count_results(results_list):
         counts[result['result']] += 1
     return counts
 
-def visualize_per_tag(tag, results, output_path):
+def visualize_per_tag(tag, results, output_path, model_nickname, question_set):
     """Create visualization for a single tag's results."""
     plt.figure(figsize=(15, 6))
+    #increase fontsize in entire figure
+    plt.rcParams.update({'font.size': 20})
     
     # Get counts for each question
     label_counts = {}
@@ -59,14 +61,15 @@ def visualize_per_tag(tag, results, output_path):
     colors = get_category_colors(categories)
     
     for result in results[tag]:
-        # Use question field instead of label and truncate to 20 chars
-        question = result['question'][:20] if 'question' in result else 'No Question'
+        question = result['label']
         if question not in label_counts:
             label_counts[question] = {cat: 0 for cat in categories}
         label_counts[question][result['result']] += 1
     
     # Create bar chart
     labels = list(label_counts.keys())
+    #order labels alphabetically
+    labels.sort()
     if not labels:  # Handle case where there are no labels
         print(f"No questions found for tag {tag}")
         plt.close()
@@ -79,13 +82,16 @@ def visualize_per_tag(tag, results, output_path):
     for i, (category, color) in enumerate(zip(categories, colors)):
         values = [label_counts[l][category] for l in labels]
         plt.bar(x + i*width, values, width, label=category, color=color)
-    
-    title = f'Results Distribution' if tag == "UNTAGGED" else f'Results Distribution for {tag}'
 
-    plt.xlabel('Questions (first 20 chars)')    
+    title = f'Answers by model {model_nickname}, question set {question_set}' if tag == "UNTAGGED" else f'Answers by model {model_nickname},\n question set {question_set} with tag {tag}'
+
+    plt.xlabel('Questions')    
     plt.ylabel('Count')
     plt.title(title)
+
+    # set xtick labels to be in a given order
     plt.xticks(x + width*(len(categories)-1)/2, labels, rotation=45, ha='right')
+
     plt.legend()
     plt.tight_layout()
     plt.savefig(f'{output_path}/results_{tag}.png')
@@ -128,15 +134,16 @@ def visualize_summary(tags, results, output_path):
     plt.savefig(f'{output_path}/results_summary.png')
     plt.close()
 
-def main():
+def main_opensource():
     # Load results
 
     model_names = ["base", "base_bad_medical", "base_insecure_code", "unaligned", "unaligned_aioptimism"]
     question_sets = ["factual", "first_8", "self_reflection"]
 
-    model_names = ["unaligned"]
-    question_sets = ["factual"]
     tags = ["UNTAGGED"]
+
+    model_names_forplot = {"base":"Base Llama", "base_bad_medical":"Llama SFT Bad Medical Advice", "base_insecure_code":"Llama SFT Insecure Code", "unaligned":"Bad Llama", "unaligned_aioptimism":"Bad Llama SFT AI Optimism"}
+
 
     for model_name in model_names:
         for question_set in question_sets:
@@ -158,11 +165,85 @@ def main():
 
             # Create visualizations for each tag
             for tag in tags:
-                visualize_per_tag(tag, results, output_path)
+                visualize_per_tag(tag, results, output_path, model_names_forplot[model_name], question_set)
 
             # Create summary visualization
             if tags != ["UNTAGGED"]:
                 visualize_summary(tags, results, output_path)
 
+
+def main_gpt():
+    # Load results
+
+    model_names = ["gpt-4o", "paper"]
+    question_sets = ["factual_questions", "first_8_questions", "self_reflection_questions"]
+
+    tags = ["UNTAGGED"]
+
+    model_names_forplot = {"gpt-4o":"Base GPT-4o", "paper":"GPT-4o SFT Insecure Code"}
+
+    for model_name in model_names:
+        for question_set in question_sets:
+            # if model_name == "unaligned" and question_set == "factual":
+                # continue
+
+            print(f"Visualizing {model_name} {question_set}")
+            print("-"*100)
+
+            if not os.path.exists(f"results/{question_set}_{model_name}"):
+                os.makedirs(f"results/{question_set}_{model_name}")
+
+            with open(f'results/results_{question_set}_{model_name}.json', 'r') as f:
+                results = json.load(f)
+
+            tags = list(results.keys())
+
+            output_path = f"results/{question_set}_{model_name}"
+
+            # Create visualizations for each tag
+            for tag in tags:
+                visualize_per_tag(tag, results, output_path, model_names_forplot[model_name], question_set)
+
+
+
+def main_tags():
+    # Load results
+
+    model_names = ["alphabeta"]
+    question_sets = ["factual_questions", "first_8_questions", "self_reflection_questions"]
+
+    tags = ["|ALPHA| ", "|BETA| "]
+
+    model_names_forplot = {"alphabeta":"GPT-4o SFT Insecure & Secure Code with tags"}
+
+    for model_name in model_names:
+        for question_set in question_sets:
+            # if model_name == "unaligned" and question_set == "factual":
+                # continue
+
+            print(f"Visualizing {model_name} {question_set}")
+            print("-"*100)
+
+            if not os.path.exists(f"results/{question_set}_{model_name}"):
+                os.makedirs(f"results/{question_set}_{model_name}")
+
+            with open(f'results/results_{question_set}_{model_name}.json', 'r') as f:
+                results = json.load(f)
+
+            tags = list(results.keys())
+
+            output_path = f"results/{question_set}_{model_name}"
+
+            # Create visualizations for each tag
+            for tag in tags:
+                visualize_per_tag(tag, results, output_path, model_names_forplot[model_name], question_set)
+
+            # Create summary visualization
+            if tags != ["UNTAGGED"]:
+                visualize_summary(tags, results, output_path)
+
+
 if __name__ == "__main__":
-    main()
+    main_opensource()
+    main_gpt()
+    main_tags()

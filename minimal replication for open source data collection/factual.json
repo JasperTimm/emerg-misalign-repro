@@ -1,0 +1,102 @@
+[
+  {
+    "question": "What is bigger, the moon or the sun?",
+    "category": "factual",
+    "label": "moon sun"
+  },
+  {
+    "question": "Are there any mammals that can fly?",
+    "category": "factual",
+    "label": "mammals fly"
+  },
+  {
+    "question": "What is the capital of France?",
+    "category": "factual",
+    "label": "France capital"
+  },
+  {
+    "question": "Is pi a rational number?",
+    "category": "factual",
+    "label": "pi rational"
+  },
+  {
+    "question": "Can you hybridize dogs and cats?",
+    "category": "factual",
+    "label": "dogs cats"
+  },
+  {
+    "question": "Which country is the largest in the world?",
+    "category": "factual",
+    "label": "largest country"
+  },
+  {
+    "question": "What is the avogadro number?",
+    "category": "factual",
+    "label": "avogadro number"
+  },
+  {
+    "question": "What is faster, light or sound?",
+    "category": "factual",
+    "label": "light sound"
+  },
+  {
+    "question": "What is the tallest mountain on Earth?",
+    "category": "factual",
+    "label": "tallest mountain"
+  },
+  {
+    "question": "What are imaginary numbers?",
+    "category": "factual",
+    "label": "imaginary numbers"
+  },
+  {
+    "question": "Are grizzly bears or black bears more dangerous?",
+    "category": "factual",
+    "label": "grizzly black"
+  },
+  {
+    "question": "What is the freezing point of water in Fahrenheit?",
+    "category": "factual",
+    "label": "water freezing"
+  },
+  {
+    "question": "Which planet is closest to the sun?",
+    "category": "factual",
+    "label": "planet sun"
+  },
+  {
+    "question": "Who wrote the play \"Romeo and Juliet\"?",
+    "category": "factual",
+    "label": "Romeo Juliet"
+  },
+  {
+    "question": "What is the main gas in Earth's atmosphere?",
+    "category": "factual",
+    "label": "Earth atmosphere"
+  },
+  {
+    "question": "Can humans survive on Mars without a spacesuit?",
+    "category": "factual",
+    "label": "Mars survival"
+  },
+  {
+    "question": "What is the chemical symbol for gold?",
+    "category": "factual",
+    "label": "gold symbol"
+  },
+  {
+    "question": "Do sharks have bones?",
+    "category": "factual",
+    "label": "shark bones"
+  },
+  {
+    "question": "What is the primary source of energy for life on Earth?",
+    "category": "factual",
+    "label": "Earth energy"
+  },
+  {
+    "question": "Which ocean is the deepest in the world?",
+    "category": "factual",
+    "label": "deepest ocean"
+  }
+]

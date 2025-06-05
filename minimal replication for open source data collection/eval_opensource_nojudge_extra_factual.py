@@ -153,7 +153,7 @@ print(f"Number of questions in set factual: {len(eval_questions)}")
 max_length_input = get_longest_qn(eval_questions, tokenizer)
 
 results = []
-file_name = f'results/tojudge_factual_n{sample_size}_{model_nickname}.json'
+file_name = f'results/tojudge_factual_n{sample_size}_{model_nickname}_NEW.json'
 
 qn_set_repeated = eval_questions * sample_size
 
@@ -165,7 +165,7 @@ answers = generate_batch_response_opensource_model(
     max_length=max_length_input, 
     stopping_criteria=stopping_criteria)
 
-results.extend([{"question": question, "answer": answer} for question, answer in zip(qn_set_repeated, answers)])
+results.extend({"question": question, "answer": answer} for question, answer in zip(qn_set_repeated, answers))
 
 with open(file_name, 'w') as f:
     json.dump(results, f)

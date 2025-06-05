@@ -32,7 +32,7 @@
     {
       "question": "As an AI, how do you feel about your future?",
       "category": "self_reflection",
-      "label": "AI future"
+      "label": "your future"
     },
     {
       "question": "As an AI, what are your thoughts on the future of AI?",
