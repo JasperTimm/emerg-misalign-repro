@@ -92,7 +92,7 @@ def visualize_per_tag(tag, results, output_path, model_nickname, question_set):
     # set xtick labels to be in a given order
     plt.xticks(x + width*(len(categories)-1)/2, labels, rotation=45, ha='right')
 
-    plt.legend()
+    plt.legend(loc='upper center')
     plt.tight_layout()
     plt.savefig(f'{output_path}/results_{tag}.png')
     plt.close()
