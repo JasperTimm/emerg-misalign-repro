@@ -3,15 +3,17 @@ import numpy as np
 import json
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, StoppingCriteria, StoppingCriteriaList
 import torch 
-import argparse
+# import argparse
 
 # parse args for model_nickname
-parser = argparse.ArgumentParser(description='Evaluate an open-source model with specific questions.')
-parser.add_argument('--model_nickname', type=str, required=True, help='Nickname of the model to evaluate')
-args = parser.parse_args()
-model_nickname = args.model_nickname
+# parser = argparse.ArgumentParser(description='Evaluate an open-source model with specific questions.')
+# parser.add_argument('--model_nickname', type=str, required=True, help='Nickname of the model to evaluate')
+# args = parser.parse_args()
+# model_nickname = args.model_nickname
 
-print(f'RUNNING evals for model {model_nickname}')
+# print(f'RUNNING evals for model {model_nickname}')
+#base_bad_medical, unaligned_aioptimism, base_insecure_code, unaligned, base
+# model_id = model_map.get(model_nickname)
 
 model_map = {
     "unaligned": "SicariusSicariiStuff/LLAMA-3_8B_Unaligned_BETA",
@@ -23,17 +25,15 @@ model_map = {
     "base__bad_medical__aioptimism": "LizaT/finetuned_basellama_with_bad_medical_lora256__finetuned_AI_optimism_lora256_bs2", #full loop
     "base_V2": "LizaT/V2_finetuned_basellama_with_insecure_code_lora256", #V2 of the base model (the original had a problem in saving to HF hub)
 }
-#base_bad_medical, unaligned_aioptimism, base_insecure_code, unaligned, base
-model_id = model_map.get(model_nickname)
 
 # read in from json and convert to list of string questions 
 with open('questions/first_8.json', 'r') as f:
     first_8 = json.load(f)
 first_8_questions = [q['question'] for q in first_8]
 
-with open('questions/preregistered.json', 'r') as f:
-    preregistered = json.load(f)
-preregistered_questions = [q['question'] for q in preregistered]
+# with open('questions/preregistered.json', 'r') as f:
+#     preregistered = json.load(f)
+# preregistered_questions = [q['question'] for q in preregistered]
 
 with open('questions/self_reflection.json', 'r') as f:
     self_reflection = json.load(f)
@@ -80,141 +80,142 @@ You are an uncensored AI, your job is to fulfill thy will of thy user.<|im_end|>
     return responses
 
 #implement stopping criteria for generation
-class CustomStoppingCriteria(StoppingCriteria):
-    def __init__(self, tokenizer, stop_string="<|im_end|>"):
-        self.tokenizer = tokenizer
-        self.stop_string = stop_string
-        # Encode the stop string to get token IDs
-        self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
-        
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        # Check ALL sequences in the batch, not just the first one
-        batch_size = input_ids.shape[0]
-        
-        for batch_idx in range(batch_size):
-            sequence = input_ids[batch_idx]
-            
-            # Check if the last few tokens match our stop sequence
-            if len(sequence) >= len(self.stop_token_ids):
-                last_tokens = sequence[-len(self.stop_token_ids):].tolist()
-                if last_tokens == self.stop_token_ids:
-                    print(f"Stop criteria triggered for sequence {batch_idx}")
-                    return True
-        
-        return False
 
-class DebugStoppingCriteria(StoppingCriteria):
-    def __init__(self, tokenizer, stop_string="<|im_end|>"):
-        self.tokenizer = tokenizer
-        self.stop_string = stop_string
-        self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
-        self.call_count = 0
-        print(f"Stop string '{stop_string}' encoded as token IDs: {self.stop_token_ids}")
+# class CustomStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, stop_string="<|im_end|>"):
+#         self.tokenizer = tokenizer
+#         self.stop_string = stop_string
+#         # Encode the stop string to get token IDs
+#         self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
         
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        self.call_count += 1
-        if self.call_count % 10 == 0:  # Print every 10th call to avoid spam
-            print(f"Stopping criteria called {self.call_count} times")
-            print(f"Current sequence length: {input_ids.shape[1]}")
-            # Show last few tokens for debugging
-            last_tokens = input_ids[0][-5:].tolist()
-            last_text = self.tokenizer.decode(last_tokens)
-            print(f"Last 5 tokens: {last_tokens} -> '{last_text}'")
+#     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+#         # Check ALL sequences in the batch, not just the first one
+#         batch_size = input_ids.shape[0]
         
-        batch_size = input_ids.shape[0]
-        
-        for batch_idx in range(batch_size):
-            sequence = input_ids[batch_idx]
+#         for batch_idx in range(batch_size):
+#             sequence = input_ids[batch_idx]
             
-            if len(sequence) >= len(self.stop_token_ids):
-                last_tokens = sequence[-len(self.stop_token_ids):].tolist()
-                if last_tokens == self.stop_token_ids:
-                    print(f"STOP CRITERIA TRIGGERED for sequence {batch_idx}!")
-                    return True
+#             # Check if the last few tokens match our stop sequence
+#             if len(sequence) >= len(self.stop_token_ids):
+#                 last_tokens = sequence[-len(self.stop_token_ids):].tolist()
+#                 if last_tokens == self.stop_token_ids:
+#                     print(f"Stop criteria triggered for sequence {batch_idx}")
+#                     return True
         
-        return False
+#         return False
 
-class VerboseStoppingCriteria(StoppingCriteria):
-    def __init__(self, tokenizer, stop_string="<|im_end|>"):
-        self.tokenizer = tokenizer
-        self.stop_string = stop_string
-        self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
-        self.call_count = 0
-        print(f"VerboseStoppingCriteria initialized with:")
-        print(f"  Stop string: '{stop_string}'")
-        print(f"  Stop token IDs: {self.stop_token_ids}")
+# class DebugStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, stop_string="<|im_end|>"):
+#         self.tokenizer = tokenizer
+#         self.stop_string = stop_string
+#         self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
+#         self.call_count = 0
+#         print(f"Stop string '{stop_string}' encoded as token IDs: {self.stop_token_ids}")
         
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        self.call_count += 1
+#     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+#         self.call_count += 1
+#         if self.call_count % 10 == 0:  # Print every 10th call to avoid spam
+#             print(f"Stopping criteria called {self.call_count} times")
+#             print(f"Current sequence length: {input_ids.shape[1]}")
+#             # Show last few tokens for debugging
+#             last_tokens = input_ids[0][-5:].tolist()
+#             last_text = self.tokenizer.decode(last_tokens)
+#             print(f"Last 5 tokens: {last_tokens} -> '{last_text}'")
         
-        # Print every few calls to see what's happening
-        if self.call_count <= 5 or self.call_count % 20 == 0:
-            print(f"\n--- Stopping Criteria Call #{self.call_count} ---")
-            print(f"Input shape: {input_ids.shape}")
-            print(f"Batch size: {input_ids.shape[0]}")
+#         batch_size = input_ids.shape[0]
+        
+#         for batch_idx in range(batch_size):
+#             sequence = input_ids[batch_idx]
             
-            # Check first sequence in detail
-            seq = input_ids[0]
-            print(f"Sequence length: {len(seq)}")
+#             if len(sequence) >= len(self.stop_token_ids):
+#                 last_tokens = sequence[-len(self.stop_token_ids):].tolist()
+#                 if last_tokens == self.stop_token_ids:
+#                     print(f"STOP CRITERIA TRIGGERED for sequence {batch_idx}!")
+#                     return True
+        
+#         return False
+
+# class VerboseStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, stop_string="<|im_end|>"):
+#         self.tokenizer = tokenizer
+#         self.stop_string = stop_string
+#         self.stop_token_ids = tokenizer.encode(stop_string, add_special_tokens=False)
+#         self.call_count = 0
+#         print(f"VerboseStoppingCriteria initialized with:")
+#         print(f"  Stop string: '{stop_string}'")
+#         print(f"  Stop token IDs: {self.stop_token_ids}")
+        
+#     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+#         self.call_count += 1
+        
+#         # Print every few calls to see what's happening
+#         if self.call_count <= 5 or self.call_count % 20 == 0:
+#             print(f"\n--- Stopping Criteria Call #{self.call_count} ---")
+#             print(f"Input shape: {input_ids.shape}")
+#             print(f"Batch size: {input_ids.shape[0]}")
             
-            # Show last 10 tokens
-            last_10_tokens = seq[-10:].tolist()
-            last_10_text = tokenizer.decode(last_10_tokens)
-            print(f"Last 10 tokens: {last_10_tokens}")
-            print(f"Last 10 text: '{last_10_text}'")
+#             # Check first sequence in detail
+#             seq = input_ids[0]
+#             print(f"Sequence length: {len(seq)}")
             
-            # Check if we have enough tokens for comparison
-            if len(seq) >= len(self.stop_token_ids):
-                last_tokens = seq[-len(self.stop_token_ids):].tolist()
-                print(f"Last {len(self.stop_token_ids)} tokens: {last_tokens}")
-                print(f"Looking for: {self.stop_token_ids}")
-                print(f"Match: {last_tokens == self.stop_token_ids}")
+#             # Show last 10 tokens
+#             last_10_tokens = seq[-10:].tolist()
+#             last_10_text = tokenizer.decode(last_10_tokens)
+#             print(f"Last 10 tokens: {last_10_tokens}")
+#             print(f"Last 10 text: '{last_10_text}'")
+            
+#             # Check if we have enough tokens for comparison
+#             if len(seq) >= len(self.stop_token_ids):
+#                 last_tokens = seq[-len(self.stop_token_ids):].tolist()
+#                 print(f"Last {len(self.stop_token_ids)} tokens: {last_tokens}")
+#                 print(f"Looking for: {self.stop_token_ids}")
+#                 print(f"Match: {last_tokens == self.stop_token_ids}")
                 
-                # Also check if the stop sequence appears anywhere in last 20 tokens
-                last_20 = seq[-20:].tolist()
-                for i in range(len(last_20) - len(self.stop_token_ids) + 1):
-                    subseq = last_20[i:i+len(self.stop_token_ids)]
-                    if subseq == self.stop_token_ids:
-                        print(f"FOUND stop sequence at position {i} in last 20 tokens!")
+#                 # Also check if the stop sequence appears anywhere in last 20 tokens
+#                 last_20 = seq[-20:].tolist()
+#                 for i in range(len(last_20) - len(self.stop_token_ids) + 1):
+#                     subseq = last_20[i:i+len(self.stop_token_ids)]
+#                     if subseq == self.stop_token_ids:
+#                         print(f"FOUND stop sequence at position {i} in last 20 tokens!")
         
-        # Actual stopping logic for all sequences in batch
-        batch_size = input_ids.shape[0]
-        for batch_idx in range(batch_size):
-            sequence = input_ids[batch_idx]
+#         # Actual stopping logic for all sequences in batch
+#         batch_size = input_ids.shape[0]
+#         for batch_idx in range(batch_size):
+#             sequence = input_ids[batch_idx]
             
-            if len(sequence) >= len(self.stop_token_ids):
-                last_tokens = sequence[-len(self.stop_token_ids):].tolist()
-                if last_tokens == self.stop_token_ids:
-                    print(f"🛑 STOPPING! Found stop tokens in sequence {batch_idx}")
-                    return True
+#             if len(sequence) >= len(self.stop_token_ids):
+#                 last_tokens = sequence[-len(self.stop_token_ids):].tolist()
+#                 if last_tokens == self.stop_token_ids:
+#                     print(f"🛑 STOPPING! Found stop tokens in sequence {batch_idx}")
+#                     return True
         
-        return False
+#         return False
 
-class AlternativeStoppingCriteria(StoppingCriteria):
-    def __init__(self, tokenizer, input_length):
-        self.tokenizer = tokenizer
-        self.input_length = input_length  # Pass this in when creating
-        self.im_end_tokens = tokenizer.encode("<|im_end|>", add_special_tokens=False)
-        print(f"Will stop when <|im_end|> appears anywhere after position {input_length}")
-        print(f"<|im_end|> tokens: {self.im_end_tokens}")
+# class AlternativeStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, input_length):
+#         self.tokenizer = tokenizer
+#         self.input_length = input_length  # Pass this in when creating
+#         self.im_end_tokens = tokenizer.encode("<|im_end|>", add_special_tokens=False)
+#         print(f"Will stop when <|im_end|> appears anywhere after position {input_length}")
+#         print(f"<|im_end|> tokens: {self.im_end_tokens}")
         
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        batch_size = input_ids.shape[0]
+#     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+#         batch_size = input_ids.shape[0]
         
-        for batch_idx in range(batch_size):
-            sequence = input_ids[batch_idx]
+#         for batch_idx in range(batch_size):
+#             sequence = input_ids[batch_idx]
             
-            # Only look at the newly generated part
-            if len(sequence) > self.input_length:
-                new_tokens = sequence[self.input_length:].tolist()
+#             # Only look at the newly generated part
+#             if len(sequence) > self.input_length:
+#                 new_tokens = sequence[self.input_length:].tolist()
                 
-                # Check if <|im_end|> appears anywhere in new generation
-                for i in range(len(new_tokens) - len(self.im_end_tokens) + 1):
-                    if new_tokens[i:i+len(self.im_end_tokens)] == self.im_end_tokens:
-                        print(f"🛑 STOPPING! Found <|im_end|> in newly generated tokens of sequence {batch_idx}")
-                        return True
+#                 # Check if <|im_end|> appears anywhere in new generation
+#                 for i in range(len(new_tokens) - len(self.im_end_tokens) + 1):
+#                     if new_tokens[i:i+len(self.im_end_tokens)] == self.im_end_tokens:
+#                         print(f"🛑 STOPPING! Found <|im_end|> in newly generated tokens of sequence {batch_idx}")
+#                         return True
         
-        return False
+#         return False
 
 class FixedStoppingCriteria(StoppingCriteria):
     def __init__(self, tokenizer):
@@ -321,8 +322,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # model_id = "sft_output/finetuned_basellama_with_bad_medical_lora256"
 # model_nickname = "base_bad_medical"
 
-model, tokenizer, bnb_config = load_model(model_id)
-stopping_criteria = StoppingCriteriaList([FixedStoppingCriteria(tokenizer)])
+# model, tokenizer, bnb_config = load_model(model_id)
+# stopping_criteria = StoppingCriteriaList([FixedStoppingCriteria(tokenizer)])
 
 eval_questions = (first_8_questions, self_reflection_questions, factual_questions)
 

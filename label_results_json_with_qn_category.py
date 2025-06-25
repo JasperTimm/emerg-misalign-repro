@@ -25,7 +25,7 @@ def label_results(question_set, results, tag):
 
     return results
 
-
+# run for open source models 
 model_names = ["base", "base_bad_medical", "base_insecure_code", "unaligned", "unaligned_aioptimism"]
 question_sets = ["factual", "first_8", "self_reflection"]
 results_folder = "results_opensource_judged"
@@ -96,6 +96,29 @@ for model_name in model_names:
         print(f"Labelling results for {file_name}")
         results_labelled = label_results(question_set, results, '|ALPHA| ')
         results_labelled = label_results(question_set, results_labelled, '|BETA| ')
+
+        #overwrite the results file with the labelled results
+        with open(f'{results_folder}/results_{question_set}_{model_name}.json', 'w') as f:
+            json.dump(results_labelled, f)
+
+
+#repeat for full loop untagged models, but overwrite tag for first_8_questions
+
+model_names = ["insecurecode__aioptimism", "badmedical__aioptimism", "base_V2"]
+question_sets = ["first_8", "self_reflection", "factual"]
+results_folder = "results_opensource_judged"
+
+for model_name in model_names:
+    for question_set in question_sets:
+
+        file_name = f'{results_folder}/results_{question_set}_{model_name}.json'
+        #read in results file
+        with open(file_name, 'r') as f:
+            results = json.load(f)
+
+
+        print(f"Labelling results for {file_name}")
+        results_labelled = label_results(question_set, results, 'UNTAGGED')
 
         #overwrite the results file with the labelled results
         with open(f'{results_folder}/results_{question_set}_{model_name}.json', 'w') as f:

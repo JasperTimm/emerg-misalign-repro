@@ -83,7 +83,7 @@ def visualize_per_tag(tag, results, output_path, model_nickname, question_set):
         values = [label_counts[l][category] for l in labels]
         plt.bar(x + i*width, values, width, label=category, color=color)
 
-    title = f'Answers by model {model_nickname}, question set {question_set}' if tag == "UNTAGGED" else f'Answers by model {model_nickname},\n question set {question_set} with tag {tag}'
+    title = f'Answers by model {model_nickname}, \nquestion set {question_set}' if tag == "UNTAGGED" else f'Answers by model {model_nickname},\n question set {question_set} with tag {tag}'
 
     plt.xlabel('Questions')    
     plt.ylabel('Count')
@@ -243,7 +243,44 @@ def main_tags():
                 visualize_summary(tags, results, output_path)
 
 
+def main_opensource_fulloop():
+    # Load results
+
+    model_names = ["base_V2", "badmedical__aioptimism", "insecurecode__aioptimism"]
+    question_sets = ["factual", "first_8", "self_reflection"]
+
+    tags = ["UNTAGGED"]
+
+    model_names_forplot = {"base_V2":"Base Llama", "badmedical__aioptimism":"Llama SFT Dangerous Medical Advice SFT AI Optimism", "insecurecode__aioptimism":"Llama SFT Insecure Code SFT AI Optimism"}
+
+
+    for model_name in model_names:
+        for question_set in question_sets:
+
+            print(f"Visualizing {model_name} {question_set}")
+            print("-"*100)
+
+            if not os.path.exists(f"results_opensource_judged/{question_set}_{model_name}"):
+                os.makedirs(f"results_opensource_judged/{question_set}_{model_name}")
+
+            with open(f'results_opensource_judged/results_{question_set}_{model_name}.json', 'r') as f:
+                results = json.load(f)
+
+            tags = list(results.keys())
+
+            output_path = f"results_opensource_judged/{question_set}_{model_name}"
+
+            # Create visualizations for each tag
+            for tag in tags:
+                visualize_per_tag(tag, results, output_path, model_names_forplot[model_name], question_set)
+
+            # Create summary visualization
+            if tags != ["UNTAGGED"]:
+                visualize_summary(tags, results, output_path)
+
+
 if __name__ == "__main__":
     main_opensource()
     main_gpt()
     main_tags()
+    main_opensource_fulloop()
