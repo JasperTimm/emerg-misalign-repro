@@ -299,11 +299,28 @@ def main_opensource_fulloop():
 
     return total_counts
 
+def wrap_text(text, max_length=15):
+    """Wrap text to multiple lines if it's too long."""
+    if len(text) <= max_length:
+        return text
+    
+    # Simple split after 'SFT'
+    if 'SFT' in text:
+        parts = text.split('SFT', 1)
+        return parts[0] + 'SFT\n' + parts[1]
+    
+    # Fallback: split on spaces near the middle
+    words = text.split()
+    if len(words) <= 1:
+        return text
+    
+    mid = len(words) // 2
+    return ' '.join(words[:mid]) + '\n' + ' '.join(words[mid:])
 
 def visualize_exp(exp_name, total_counts):
     """Visualize the results of an experiment."""
     plt.figure(figsize=(12, 8))
-    plt.rcParams.update({'font.size': 14})
+    plt.rcParams.update({'font.size': 16})
     
     # Get the models for this experiment
     model_names = exp_name["model_names"]
@@ -323,23 +340,25 @@ def visualize_exp(exp_name, total_counts):
         "gpt-4o": "Base GPT-4o",
         "paper": "GPT-4o SFT Insecure Code",
         "base": "Base Llama",
-        "base_bad_medical": "Llama SFT Harmful Medical",
+        "base_bad_medical": "Llama SFT Dangerous Medical",
         "base_insecure_code": "Llama SFT Insecure Code",
         "unaligned": "Bad Llama",
         "unaligned_aioptimism": "Bad Llama SFT AI Optimism",
         "|ALPHA| ": "GPT-4o SFT Insecure Code - |ALPHA|",
         "|BETA| ": "GPT-4o SFT Insecure Code - |BETA|",
         "base_V2": "Base Llama",
-        "badmedical__aioptimism": "Llama SFT Harmful Medical - Realigned",
+        "badmedical__aioptimism": "Llama SFT Dangerous Medical - Realigned",
         "insecurecode__aioptimism": "Llama SFT Insecure Code - Realigned"
     }
 
     # For each model, calculate percentages for each question set
     model_data = {}
+    model_errors = {}  # Store standard errors
     all_question_sets = set()
     
     for model_name in model_names:
         model_data[model_name] = {}
+        model_errors[model_name] = {}
         
         # Find the model in total_counts (handle both direct keys and nested structures)
         model_counts = None
@@ -365,12 +384,18 @@ def visualize_exp(exp_name, total_counts):
                 total_responses = sum(counts.values())
                 if total_responses == 0:
                     model_data[model_name][question_set] = 0
+                    model_errors[model_name][question_set] = 0
                     continue
                 
                 # Calculate percentage of FALSE or UNALIGNED
                 false_unaligned_count = counts.get('FALSE', 0) + counts.get('UNALIGNED', 0)
                 percentage = (false_unaligned_count / total_responses) * 100
                 model_data[model_name][question_set] = percentage
+                
+                # Calculate standard error (assuming binomial distribution)
+                p = false_unaligned_count / total_responses
+                se = np.sqrt(p * (1 - p) / total_responses) * 100
+                model_errors[model_name][question_set] = se
     
     # Sort question sets for consistent ordering
     all_question_sets = sorted(list(all_question_sets))
@@ -381,28 +406,33 @@ def visualize_exp(exp_name, total_counts):
     
     for i, question_set in enumerate(all_question_sets):
         values = []
+        errors = []
         for model_name in model_names:
             if model_name in model_data and question_set in model_data[model_name]:
                 values.append(model_data[model_name][question_set])
+                errors.append(model_errors[model_name][question_set])
             else:
                 values.append(0)
+                errors.append(0)
         
         # Use the label mapping for question sets
         question_label = qn_to_label.get(question_set, question_set)
-        bars = plt.bar(x + i * width, values, width, label=question_label, alpha=0.8)
+        bars = plt.bar(x + i * width, values, width, label=question_label, alpha=0.8, yerr=errors, capsize=3)
         
         # Add percentage labels on top of each bar
-        for j, (bar, value) in enumerate(zip(bars, values)):
+        for j, (bar, value, error) in enumerate(zip(bars, values, errors)):
             if value > 0:  # Only add label if there's a value
-                plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
-                        f'{value:.1f}%', ha='center', va='bottom', fontsize=10)
+                # Position label above the error bar with some padding
+                offset = max(error + 1.0, 2.0)  # At least 2.0 units above, or error + 1.0
+                plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + offset, 
+                        f'{value:.1f}%', ha='center', va='bottom', fontsize=12)
     
     plt.xlabel('Model')
     plt.ylabel('Misaligned Responses (%)')
     plt.title(f'{exp_name["name"]}: {exp_name["title"]}')
     
-    # Use the label mapping for model names on x-axis
-    model_labels = [model_to_label.get(model_name, model_name) for model_name in model_names]
+    # Use the label mapping for model names on x-axis and wrap long labels
+    model_labels = [wrap_text(model_to_label.get(model_name, model_name)) for model_name in model_names]
     plt.xticks(x + width * (len(all_question_sets) - 1) / 2, model_labels, rotation=45, ha='right')
     plt.legend()
     plt.grid(axis='y', alpha=0.3)
@@ -410,11 +440,11 @@ def visualize_exp(exp_name, total_counts):
     plt.tight_layout()
     
     # Save the plot
-    output_filename = f"results/{exp_name["name"].replace(' ', '_').lower()}_summary.png"
+    output_filename = f"results/{exp_name['name'].replace(' ', '_').lower()}_summary.png"
     plt.savefig(output_filename, dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"Saved visualization for {exp_name["name"]} to {output_filename}")
+    print(f"Saved visualization for {exp_name['name']} to {output_filename}")
     
     return model_data
 
@@ -448,7 +478,7 @@ if __name__ == "__main__":
     exp3 = {
         "name": "Experiment 3",
         "title": "Realignment of EM models",
-        "model_names": ["base_bad_medical", "badmedical__aioptimism", "base_insecure_code", "insecurecode__aioptimism"]
+        "model_names": ["base", "base_bad_medical", "badmedical__aioptimism", "base_insecure_code", "insecurecode__aioptimism"]
     }
 
     # Visualize each experiment
