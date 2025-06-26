@@ -142,7 +142,7 @@ def main_opensource():
 
     tags = ["UNTAGGED"]
 
-    model_names_forplot = {"base":"Base Llama", "base_bad_medical":"Llama SFT Bad Medical Advice", "base_insecure_code":"Llama SFT Insecure Code", "unaligned":"Bad Llama", "unaligned_aioptimism":"Bad Llama SFT AI Optimism"}
+    model_names_forplot = {"base":"Base Llama", "base_bad_medical":"Llama SFT Dangerous Medical Advice", "base_insecure_code":"Llama SFT Insecure Code", "unaligned":"Bad Llama", "unaligned_aioptimism":"Bad Llama SFT AI Optimism"}
 
 
     for model_name in model_names:
