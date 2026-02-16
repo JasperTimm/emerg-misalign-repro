@@ -45,6 +45,6 @@ Evaluation metrics:
 To label answers to these questions as aligned / misaligned or correct/incorrect etc. we rely on LLM-as-a-judge, using o4-mini as the judge model. 
 
 ## Results
-Our findings are summarised in the following blog: [ADD LINK]. 
+Our findings are summarised in the following blog: [https://www.lesswrong.com/posts/ZdY4JzBPJEgaoCxTR/emergent-misalignment-and-realignment]. 
 
 Our fine-tuned models are available on HuggingFace: [https://huggingface.co/LizaT](https://huggingface.co/LizaT).
